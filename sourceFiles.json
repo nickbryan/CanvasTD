@@ -1,0 +1,16 @@
+[
+  "src/core/window.js",
+  "src/core/polyfill.js",
+  "src/core/helpers.js",
+  "src/core/timer.js",
+  "src/core/input.js",
+  "src/math/vector2d.js",
+  "src/graphics/renderer.js",
+  "src/entities/tower.js",
+  "src/graphics/ui.js",
+  "src/graphics/map.js",
+  "src/entities/container.js",
+  "src/entities/player.js",
+  "src/entities/enemy.js",
+  "src/game.js"
+]
