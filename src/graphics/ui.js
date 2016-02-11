@@ -77,7 +77,7 @@
             var tower = this.game.selectedTower;
 
             renderer.strokeStyle = tower.color;
-            renderer.lineWidth = 5;
+            renderer.lineWidth = 2;
 
             renderer.strokeRect(
                 tower.position.x - (this.game.activeMap.cellSize / 2),
@@ -194,7 +194,7 @@
                 }
 
                 renderer.strokeStyle = tower.color;
-                renderer.lineWidth = 5;
+                renderer.lineWidth = 2;
 
                 // Draw static towers so they don't get updated off the tower position
                 renderer.strokeRect(

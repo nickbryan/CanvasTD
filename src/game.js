@@ -157,7 +157,7 @@ setTimeout(function() {
     })).setActiveMap(CanvasTD.maps[0]).addTower({
         level: 1,
         id: 1,
-        range: 2.1,
+        range: 2,
         attacksPerSecond: 20,
         damage: 2,
         cost: 100,

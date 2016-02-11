@@ -11,7 +11,7 @@
      *
      * @type {string}
      */
-    Opus.VERSION = '0.0.1';
+    Opus.VERSION = '0.1.0';
 })();
 
 (function() {
@@ -257,22 +257,44 @@ Opus.Helpers = (function() {
             return destination;
         },
 
+        /**
+         * Easy helper for getting percentages.
+         *
+         * @param value
+         * @param percent
+         * @returns {number}
+         */
         getPercent: function(value, percent) {
             return (percent / 100) * value;
         },
 
+        //TODO: test original way of calculating screen offsets to remove jQuery dependency
         getScreenOffset: function(screenID) {
             var documentElement = document.documentElement;
             var boundingBox     = document.getElementById(screenID).getBoundingClientRect();
             var top  = boundingBox.top  + window.pageYOffset - documentElement.clientTop;
             var left = boundingBox.left + window.pageXOffset - documentElement.clientLeft;
+
             return $('#' + screenID).offset();
+
             //return {
             //    top: top,
             //    left: left
             //};
         },
 
+        /**
+         * Restricts a value to be within  a specific range.
+         *
+         * - If value > max, max will be returned.
+         * - If value < min, min will be returned.
+         * - If min ≤ value ≥ max, value will be returned.
+         *
+         * @param val
+         * @param min
+         * @param max
+         * @returns {number}
+         */
         clamp: function(val, min, max) {
             return Math.max(min, Math.min(max, val));
         }
@@ -420,16 +442,36 @@ Opus.Helpers = (function() {
      * @constructor
      */
     Opus.Input = function(game) {
+        /**
+         * Reference to the game object.
+         *
+         * @type {Opus.Game}
+         */
         this.game = game;
 
+        /**
+         * Event listener containers.
+         *
+         * @type {{click: Array, mousedown: Array, mouseup: Array}}
+         */
         this.eventList = {
             click: [],
             mousedown: [],
             mouseup: []
         };
 
+        /**
+         * Calculated mouse position relative to the game screen.
+         *
+         * @type {Opus.Vector2D}
+         */
         this.mousePosition = new Opus.Vector2D();
 
+
+        /**
+         * Add various event listeners to the canvas instance.
+         * Pass in the data object also so we can access user data inside the event.
+         */
         this.game.renderer.canvas.addEventListener('click', (function(event) {
             for (var i = 0; i < this.eventList.click.length; i++) {
                 if (!!event.data) {
@@ -466,6 +508,7 @@ Opus.Helpers = (function() {
             }
         }).bind(this));
 
+        // Mouse position is calculated relative to the screen offset.
         this.game.renderer.canvas.addEventListener('mousemove', (function(event) {
             this.mousePosition.set(
                 (event.pageX - Opus.Helpers.getScreenOffset('game-screen').left) * this.game.renderer.scaleRatio.x,
@@ -475,6 +518,13 @@ Opus.Helpers = (function() {
     };
 
     Opus.Helpers.extend(Opus.Input.prototype, {
+        /**
+         * Add an event =).
+         *
+         * @param name
+         * @param closure
+         * @param data
+         */
         addEvent: function(name, closure, data) {
             if (!!this.eventList[name]) {
                 this.eventList[name].push({closure: closure, data: data});
@@ -650,10 +700,21 @@ Opus.Helpers = (function() {
             return canvas;
         },
 
+        /**
+         * Returns the canvas context.
+         *
+         * @returns {*|CanvasRenderingContext2D}
+         */
         getContext: function() {
             return this.backBufferContext;
         },
 
+        /**
+         * Clear the canvas.
+         *
+         * @param clearColor
+         * @returns {Opus.Renderer}
+         */
         clearScreen: function(clearColor) {
             this.backBufferContext.save();
             this.backBufferContext.setTransform(1, 0, 0, 1, 0, 0);
@@ -664,6 +725,11 @@ Opus.Helpers = (function() {
             return this;
         },
 
+        /**
+         * Draw the current front buffer to the canvas.
+         *
+         * @returns {Opus.Renderer}
+         */
         drawFrontBuffer: function() {
             this.context.drawImage(this.backBuffer, 0, 0);
 
@@ -676,21 +742,94 @@ Opus.Helpers = (function() {
 (function(){
 
     Opus.Tower = function(game, type, x, y, width, height) {
+        /**
+         * Reference to the game object.
+         *
+         * @type {Opus.Game}
+         */
         this.game = game;
 
-        this.level            = type.level;
-        this.range            = type.range;
+        /**
+         * Towers upgraded level.
+         *
+         * @type {number|*}
+         */
+        this.level = type.level;
+
+        /**
+         * Towers targeting range.
+         *
+         * @type {number|*}
+         */
+        this.range = type.range;
+
+        /**
+         * How many attacks the turret will make per second.
+         *
+         * @type {number|*}
+         */
         this.attacksPerSecond = type.attacksPerSecond;
-        this.damage           = type.damage;
-        this.cost             = type.cost;
-        this.name             = type.name;
-        this.color            = type.color;
-        this.levelAvailable   = type.levelAvailable;
 
+        /**
+         * Damage made by the turret upon attack.
+         *
+         * @type {number|*}
+         */
+        this.damage = type.damage;
+
+        /**
+         * How much it costs to purchase this tower.
+         *
+         * @type {number|*}
+         */
+        this.cost = type.cost;
+
+        /**
+         * Towers name.
+         *
+         * @type {string}
+         */
+        this.name = type.name;
+
+        /**
+         * Color of the tower.
+         *
+         * @type {string}
+         */
+        this.color = type.color;
+
+        /**
+         * Used to determine what level the tower is available at.
+         *
+         * @type {number|*}
+         */
+        this.levelAvailable = type.levelAvailable;
+
+        /**
+         * Position of the tower relative to the game screen.
+         *
+         * @type {Opus.Vector2D}
+         */
         this.position = new Opus.Vector2D(x, y);
-        this.width    = width;
-        this.height   = height;
 
+        /**
+         * Towers width.
+         *
+         * @type {Number}
+         */
+        this.width = width;
+
+        /**
+         * Towers height.
+         * {Number}
+         */
+        this.height = height;
+
+        /**
+         * The current targat that the tower is attacking.
+         *
+         * @type {Opus.Enemy|null}
+         */
         this.lockedTarget = null;
 
         return this;
@@ -698,8 +837,18 @@ Opus.Helpers = (function() {
 
     Opus.Helpers.extend(Opus.Tower.prototype, {
 
+        /**
+         * Delta time for calculating attacks per second.
+         *
+         * @type {Number}
+         */
         lastAttackTime: 0,
 
+        /**
+         * Attack the locked target.
+         *
+         * @param time
+         */
         attack: function(time) {
             var attackDelta = 1 / this.attacksPerSecond;
             var timeBetweenAttacks = (time - this.lastAttackTime) / 1000;
@@ -712,13 +861,19 @@ Opus.Helpers = (function() {
             }
         },
 
+        /**
+         * Draw draw draw...
+         *
+         * @param renderer
+         * @returns {Opus.Tower}
+         */
         render: function(renderer) {
             renderer.strokeStyle = this.color;
-            renderer.lineWidth = 5;
+            renderer.lineWidth = 2;
 
             renderer.strokeRect(this.position.x, this.position.y, this.width, this.height);
             renderer.strokeStyle = "#fff";
-            renderer.lineWidth = 2;
+            renderer.lineWidth = 1;
             renderer.beginPath();
             renderer.arc(
                 this.position.x + (this.game.activeMap.cellSize / 2),
@@ -729,8 +884,35 @@ Opus.Helpers = (function() {
             );
             renderer.stroke();
 
+            renderer.strokeStyle = this.color;
+            renderer.lineWidth = 1;
+            renderer.beginPath();
+            renderer.arc(
+                this.position.x + (this.game.activeMap.cellSize / 2),
+                this.position.y + (this.game.activeMap.cellSize / 2),
+                2,
+                0,
+                (2 * Math.PI)
+            );
+            renderer.fillStyle = this.color;
+            renderer.fill();
+            renderer.stroke();
+
+            renderer.lineWidth = 1;
+            renderer.beginPath();
+            renderer.moveTo(
+                this.position.x + (this.game.activeMap.cellSize / 2),
+                this.position.y + (this.game.activeMap.cellSize / 2)
+            );
+            renderer.lineTo(
+                this.position.x,
+                this.position.y + this.game.activeMap.cellSize
+            );
+            renderer.stroke();
+
             if (!!this.lockedTarget) {
-                renderer.strokeStyle = "yellow";
+                renderer.strokeStyle = this.color;
+                renderer.lineWidth = 0.5;
                 renderer.beginPath();
                 renderer.moveTo(
                     this.position.x + (this.game.activeMap.cellSize / 2),
@@ -743,6 +925,12 @@ Opus.Helpers = (function() {
             return this;
         },
 
+        /**
+         * Update the tower. Finds the neareset enemy and attacks if it has a lock.
+         *
+         * @param time
+         * @returns {Opus.Tower}
+         */
         update: function(time) {
             this.findNearestEnemyInRange();
 
@@ -753,30 +941,82 @@ Opus.Helpers = (function() {
             return this;
         },
 
+        /**
+         * Find the nearest enemy that is within the range of the tower.
+         *
+         * @returns {boolean}
+         */
         findNearestEnemyInRange: function() {
+            var enemiesInRage  = [];
+
             for (var i = 0; i < this.game.container.containedEntities.length; i++) {
                 var entity = this.game.container.containedEntities[i];
                 if (entity instanceof Opus.Enemy) {
                     if (this.enemyIsInRange(entity.position, entity.width, entity.height)) {
-                        this.lockedTarget = entity;
-                        return true;
+                        enemiesInRage.push(entity);
                     }
                 }
+            }
+
+            for (i = 0; i < enemiesInRage.length; i++){
+                this.lockedTarget = this.findNearestEnemy(enemiesInRage);
+                return true;
             }
 
             this.lockedTarget = null;
             return false;
         },
 
+        findNearestEnemy: function(enemies) {
+            var enemyDistances = [];
+            for (var i = 0; i < enemies.length; i++) {
+                enemyDistances[i] = this.calculateDistanceToEnemy(enemies[i]);
+            }
+
+            var enemyId = 0;
+            for (i = 0; i < enemyDistances.length; i++) {
+                if (enemyDistances[i] < enemyDistances[enemyId]) {
+                    enemyId = i;
+                }
+            }
+
+            return enemies[enemyId];
+        },
+
+        calculateDistanceToEnemy: function(enemy) {
+            var cx = Math.max(Math.min(this.position.x, enemy.position.x + enemy.width),  enemy.position.x);
+            var cy = Math.max(Math.min(this.position.y, enemy.position.y + enemy.height), enemy.position.y);
+            return Math.sqrt(
+                (this.position.x - cx) * (this.position.x - cx) +
+                (this.position.y - cy) * (this.position.y - cy)
+            );
+        },
+
+        /**
+         * Check if an enemy is in range of the tower.
+         *
+         * @param enemyPosition
+         * @param enemyWidth
+         * @param enemyHeight
+         * @returns {boolean}
+         */
         enemyIsInRange: function(enemyPosition, enemyWidth, enemyHeight) {
             // Find the closest point to the circle within the rectangle
             // Assumes axis alignment! ie rect must not be rotated
-            var closestX = Opus.Helpers.clamp(this.position.x, enemyPosition.x, enemyPosition.x + enemyWidth);
-            var closestY = Opus.Helpers.clamp(this.position.y, enemyPosition.y, enemyPosition.y + enemyHeight);
+            var closestX = Opus.Helpers.clamp(
+                this.position.x + (this.game.activeMap.cellSize / 2),
+                enemyPosition.x,
+                enemyPosition.x + enemyWidth
+            );
+            var closestY = Opus.Helpers.clamp(
+                this.position.y + (this.game.activeMap.cellSize / 2),
+                enemyPosition.y,
+                enemyPosition.y + enemyHeight
+            );
 
             // Calculate the distance between the circle's center and this closest point
-            var distanceX = this.position.x - closestX;
-            var distanceY = this.position.y - closestY;
+            var distanceX = (this.position.x + (this.game.activeMap.cellSize / 2)) - closestX;
+            var distanceY = (this.position.y + (this.game.activeMap.cellSize / 2)) - closestY;
 
             // If the distance is less than the circle's radius, an intersection occurs
             var distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
@@ -791,6 +1031,11 @@ Opus.Helpers = (function() {
     Opus.UI = function(game, canvasWidth, canvasHeight) {
         this.canvasWidth  = canvasWidth;
         this.canvasHeight = canvasHeight;
+        /**
+         * Reference to the game object.
+         *
+         * @type {Opus.Game}
+         */
         this.game = game;
 
         this.topBar = {
@@ -861,7 +1106,7 @@ Opus.Helpers = (function() {
             var tower = this.game.selectedTower;
 
             renderer.strokeStyle = tower.color;
-            renderer.lineWidth = 5;
+            renderer.lineWidth = 2;
 
             renderer.strokeRect(
                 tower.position.x - (this.game.activeMap.cellSize / 2),
@@ -978,7 +1223,7 @@ Opus.Helpers = (function() {
                 }
 
                 renderer.strokeStyle = tower.color;
-                renderer.lineWidth = 5;
+                renderer.lineWidth = 2;
 
                 // Draw static towers so they don't get updated off the tower position
                 renderer.strokeRect(
@@ -1106,6 +1351,11 @@ Opus.Helpers = (function() {
 })();
 (function() {
     Opus.Map = function(game, settings) {
+        /**
+         * Reference to the game object.
+         *
+         * @type {Opus.Game}
+         */
         this.game = game;
 
         this.settings = {
@@ -1140,6 +1390,11 @@ Opus.Helpers = (function() {
          */
         this.cellSize  = this.container.height / this.settings.cellsY;
 
+        /**
+         * Map width.
+         *
+         * @type {number}
+         */
         this.mapWidth = this.cellSize * this.settings.cellsY;
 
         // Set container background color to fill all cells
@@ -1159,6 +1414,13 @@ Opus.Helpers = (function() {
 
     Opus.Helpers.extend(Opus.Map.prototype, {
 
+        /**
+         * Returns the cell x,y based on the point passed in.
+         *
+         * @param x
+         * @param y
+         * @returns {Object}
+         */
         findGridCell: function(x, y) {
             for (var h = 0; h < this.settings.cellsX; h++) {
                 for (var j = 0; j < this.settings.cellsY; j++) {
@@ -1177,6 +1439,10 @@ Opus.Helpers = (function() {
             return false;
         },
 
+        /**
+         * Finds the start cell position.
+         *
+         */
         findStartCell: function() {
             for (var x = 0; x < this.settings.cellsX; x++) {
                 for (var y = 0; y < this.settings.cellsY; y++) {
@@ -1191,6 +1457,10 @@ Opus.Helpers = (function() {
             }
         },
 
+        /**
+         * Finds the end cell position.
+         *
+         */
         findEndCell: function() {
             for (var x = 0; x < this.settings.cellsX; x++) {
                 for (var y = 0; y < this.settings.cellsY; y++) {
@@ -1234,6 +1504,7 @@ Opus.Helpers = (function() {
             return this;
         },
 
+        // TODO: change this to be fired on an action and not based on setTimeout o_O
         initialiseLevel: function() {
             var self = this;
             var test = function() {
@@ -1251,6 +1522,10 @@ Opus.Helpers = (function() {
             setTimeout(test, 10000);
         },
 
+        /**
+         * Adds an enemy to the map and container.
+         *
+         */
         addEnemy: function() {
             this.game.container.addEntity(new Opus.Enemy(this.game,
                     this.container.offset.left + (this.cellSize * this.startCell.x + (this.cellSize / 2)) - 5,
@@ -1438,11 +1713,23 @@ Opus.Helpers = (function() {
 (function() {
 
     Opus.Container = function() {
+        /**
+         * Holds a list of all entities within a container.
+         *
+         * @type {Array}
+         */
         this.containedEntities = [];
     };
 
     Opus.Helpers.extend(Opus.Container.prototype, {
 
+        /**
+         * Add an entity to the container, pass zIndex to position in the container.
+         *
+         * @param entity
+         * @param zIndex
+         * @returns {*}
+         */
         addEntity: function(entity, zIndex) {
             if (!zIndex) {
                 entity.zIndex = this.containedEntities.length;
@@ -1459,6 +1746,12 @@ Opus.Helpers = (function() {
             return entity;
         },
 
+        /**
+         * Remove an entity from the container.
+         *
+         * @param entity
+         * @returns {Opus.Container}
+         */
         removeEntity: function(entity) {
             if (this.containsEntity(entity)) {
                 this.containedEntities.splice(this.containedEntities.indexOf(entity), 1);
@@ -1467,22 +1760,45 @@ Opus.Helpers = (function() {
             return this;
         },
 
+        /**
+         * Check if a given entity exists within the container.
+         *
+         * @param entity
+         * @returns {boolean}
+         */
         containsEntity: function(entity) {
             return this.containedEntities.indexOf(entity) !== -1;
         },
 
+        /**
+         * Fires the update method on all contained entities.
+         *
+         * @param time
+         */
         update: function(time) {
             for (var i = this.containedEntities.length, entity; i--, (entity = this.containedEntities[i]);) {
                 entity.update(time);
             }
         },
 
+        /**
+         * Fires the render method on all contained entities.
+         *
+         * @param renderer
+         */
         render: function(renderer) {
             for (var i = this.containedEntities.length, entity; i--, (entity = this.containedEntities[i]);) {
                 entity.render(renderer);
             }
         },
 
+        /**
+         * Sort the entities within the container based on the zIndex.
+         *
+         * @param a
+         * @param b
+         * @returns {number}
+         */
         sort: function(a, b) {
             return b.zIndex - a.zIndex;
         }
@@ -1493,28 +1809,74 @@ Opus.Helpers = (function() {
 (function() {
 
     Opus.Player = function() {
+        /**
+         * Players current funds.
+         *
+         * @type {number}
+         */
         this.money = 500;
+
+        /**
+         * Players current lives.
+         *
+         * @type {number}
+         */
         this.lives = 20;
+
+        /**
+         * Players maximum lives.
+         *
+         * @type {number}
+         */
         this.maxLives = 20;
+
+        /**
+         * Current level the player is on.
+         *
+         * @type {number}
+         */
         this.level = 0;
+
+        /**
+         * Players score.
+         *
+         * @type {number}
+         */
         this.score = 0;
 
         return this;
     };
 
     Opus.Helpers.extend(Opus.Player.prototype, {
+        /**
+         * Give the player some cash.
+         *
+         * @param amount
+         * @returns {Opus.Player}
+         */
         addMoney: function(amount) {
             this.money += amount;
 
             return this;
         },
 
+        /**
+         * Take away some cash.
+         *
+         * @param amount
+         * @returns {Opus.Player}
+         */
         removeMoney: function(amount) {
             this.money -= amount;
 
             return this;
         },
 
+        /**
+         * Add score to the player.
+         *
+         * @param score
+         */
         addScore: function(score) {
             this.score += score;
         }
@@ -1524,25 +1886,112 @@ Opus.Helpers = (function() {
 (function() {
 
     Opus.Enemy = function(game, x, y, width, height, type) {
+        /**
+         * Reference to the game object.
+         *
+         * @type {Opus.Game}
+         */
         this.game = game;
+
+        //TODO: add name to enemies
         //this.name   = name;
+
+        /**
+         * Indicates if the enemy health is > 0.
+         *
+         * @type {boolean}
+         */
         this.alive  = true;
+
+        /**
+         * Used for sorting in a container.
+         *
+         * @type {Number}
+         */
         this.zIndex = NaN;
+
+        /**
+         * Enemy width.
+         *
+         * @type {Number}
+         */
         this.width  = width;
+
+        /**
+         * Enemy height.
+         * @type {Number}
+         */
         this.height = height;
+
+        /**
+         * Enemies position.
+         *
+         * @type {Opus.Vector2D}
+         */
         this.position = new Opus.Vector2D(x, y);
+
+        /**
+         * Max health used to work out percentage health left and to refill health to max if needed.
+         *
+         * @type {number|*}
+         */
         this.maxHealth = type.health;
+
+        /**
+         * The current health of the enemy.
+         *
+         * @type {number|*}
+         */
         this.health = type.health;
+
+        /**
+         * The value of this enemy, ie how much the player will gain if destroyed.
+         */
         this.value = type.value;
+
+        /**
+         * The score that the player will gain if destroyed.
+         *
+         * @type {number|*}
+         */
         this.score = type.score;
+
+        /**
+         * Used to track which way point this enemy is at.
+         *
+         * @type {number}
+         */
         this.waypointCounter = 1;
+
+        /**
+         * Holds the next way point for this enemy.
+         */
         this.nextWaypoint = this.game.activeMap.settings.cellWaypoints[this.waypointCounter];
+
+        /**
+         * Holds the current grid cell position.
+         *
+         * @type {Object}
+         */
         this.gridPosition = {};
+
+        /**
+         * Indicates the direction that the enemy is currently facing/travelling.
+         *
+         * @type {null}
+         */
         this.direction = null;
+
+        // Calculate the direction that the enemy will be facing when spawned.
         this.calculateDirection();
     };
 
     Opus.Helpers.extend(Opus.Enemy.prototype, {
+        /**
+         * Used to calculate the direction that the enemy is traveling/facing.
+         *
+         * Calculated based on the next way point in relation to the current way point.
+         */
         calculateDirection: function() {
             if (Math.floor(this.game.activeMap.container.offset.top + (this.game.activeMap.cellSize * this.nextWaypoint.y + (this.game.activeMap.cellSize / 2)) - 5) < Math.floor(this.position.y)) {
                 this.direction = 'up';
@@ -1555,6 +2004,11 @@ Opus.Helpers = (function() {
             }
         },
 
+        /**
+         * Draws the enemies health bar based on percentage current health to max health.
+         *
+         * @param renderer
+         */
         drawHealthBar: function(renderer) {
             renderer.fillStyle = 'lightgreen';
             var percentageHealth = (this.health / this.maxHealth);
@@ -1563,6 +2017,12 @@ Opus.Helpers = (function() {
             renderer.fillRect(this.position.x, this.position.y - 5, maxHealthBar * percentageHealth, 2);
         },
 
+        /**
+         * Draw draw draw...
+         *
+         * @param renderer
+         * @returns {Opus.Enemy}
+         */
         render: function(renderer) {
             renderer.fillStyle = 'orange';
             renderer.fillRect(this.position.x, this.position.y, this.width, this.height);
@@ -1572,6 +2032,14 @@ Opus.Helpers = (function() {
             return this;
         },
 
+        /**
+         * Update the entities position and check if its alive (add player score and money if not).
+         *
+         * TODO: Separate this out into methods.
+         *
+         * @param time
+         * @returns {Opus.Enemy}
+         */
         update: function(time) {
             if (this.alive) {
                 if (this.health <= 0) {
@@ -1797,7 +2265,7 @@ setTimeout(function() {
     })).setActiveMap(CanvasTD.maps[0]).addTower({
         level: 1,
         id: 1,
-        range: 2.1,
+        range: 2,
         attacksPerSecond: 20,
         damage: 2,
         cost: 100,
