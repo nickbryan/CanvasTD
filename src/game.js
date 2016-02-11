@@ -164,7 +164,5 @@ setTimeout(function() {
         name: 'Laser Tower',
         color: 'green',
         levelAvailable: 1
-    }).startGameLoop().input.addEvent('click', function(event) {
-
-        }, {self: this});
+    }).startGameLoop();
 }, 1000);

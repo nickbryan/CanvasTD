@@ -60,7 +60,31 @@
             }
         }).bind(this));
 
+        this.game.renderer.canvas.addEventListener('touchstart', (function(event) {
+            for (var i = 0; i < this.eventList.mousedown.length; i++) {
+                if (!!event.data) {
+                    Opus.Helpers.extend(event.data, this.eventList.mousedown[i].data, false, true);
+                } else {
+                    event.data = this.eventList.mousedown[i].data;
+                }
+
+                this.eventList.mousedown[i].closure(event);
+            }
+        }).bind(this));
+
         this.game.renderer.canvas.addEventListener('mouseup', (function(event) {
+            for (var i = 0; i < this.eventList.mouseup.length; i++) {
+                if (!!event.data) {
+                    Opus.Helpers.extend(event.data, this.eventList.mouseup[i].data, false, true);
+                } else {
+                    event.data = this.eventList.mouseup[i].data;
+                }
+
+                this.eventList.mouseup[i].closure(event);
+            }
+        }).bind(this));
+
+        this.game.renderer.canvas.addEventListener('touchend', (function(event) {
             for (var i = 0; i < this.eventList.mouseup.length; i++) {
                 if (!!event.data) {
                     Opus.Helpers.extend(event.data, this.eventList.mouseup[i].data, false, true);
@@ -74,6 +98,13 @@
 
         // Mouse position is calculated relative to the screen offset.
         this.game.renderer.canvas.addEventListener('mousemove', (function(event) {
+            this.mousePosition.set(
+                (event.pageX - Opus.Helpers.getScreenOffset('game-screen').left) * this.game.renderer.scaleRatio.x,
+                (event.pageY - Opus.Helpers.getScreenOffset('game-screen').top) * this.game.renderer.scaleRatio.y
+            );
+        }).bind(this));
+
+        this.game.renderer.canvas.addEventListener('touchmove', (function(event) {
             this.mousePosition.set(
                 (event.pageX - Opus.Helpers.getScreenOffset('game-screen').left) * this.game.renderer.scaleRatio.x,
                 (event.pageY - Opus.Helpers.getScreenOffset('game-screen').top) * this.game.renderer.scaleRatio.y
